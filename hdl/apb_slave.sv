@@ -33,11 +33,16 @@ module apb_slave # (
     output logic [11:0] paddr_o
 );
 
-localparam APB_IDLE = 2'b00;
-localparam APB_SETUP = 2'b01;
+// localparam APB_IDLE = 2'b00;
+// localparam APB_SETUP = 2'b01;
 
-logic [1:0] current_state;
-logic [1:0] next_state;
+// logic [1:0] current_state;
+// logic [1:0] next_state;
+
+enum logic [2:0] {
+    APB_IDLE  = 2'b00,
+    APB_SETUP = 2'b01
+} current_state, next_state;
     
 localparam  ADDR_TX_DATA_REG = 'h0;
 localparam  ADDR_RX_DATA_REG = 'h4;

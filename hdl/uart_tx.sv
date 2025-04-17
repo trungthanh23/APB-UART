@@ -14,7 +14,7 @@ module uart_tx(
     input           parity_type_i,
     input           stop_bit_num_i,
     output  logic   tx_done_o,
-    output  logic   parity_error_o,
+
     //Peripheral signals 
     input           cts_n,
     output  logic   tx
@@ -28,9 +28,13 @@ module uart_tx(
     } current_state, next_state;
 
     localparam data_tx_count = 0;
+    localparam num_data_bit_tx = 0;
+
+    localparam stop_tx_count = 0;
+    localparam num_stop_bit_tx = 0;
 
     //Current state
-    always_ff @(posedge clk or negedge rst_n) begin
+    always_ff @(posedge clk, negedge rst_n) begin
         if (!rst_n) begin
             current_state <= TX_IDLE;
         end else begin
@@ -43,34 +47,144 @@ module uart_tx(
         case (current_state)
             TX_IDLE: begin
                 if (start_tx_i && !cts_n) begin
-                    next_state <= TX_START;
+                    next_state = TX_START;
                 end else begin
-                    next_state <= TX_IDLE;
+                    next_state = TX_IDLE;
                 end
             end
             TX_START:begin
                 if (tx_tick) begin
-                    next_state <= TX_DATA;
+                    next_state = TX_DATA;
                 end else begin
-                    next_state <= TX_START;
+                    next_state = TX_START;
                 end
             end
             TX_DATA:begin
-                if () begin
-                    next_state <= TX_STOP;
+                if (tick_tx && (data_tx_count == num_data_bit_tx - 1)) begin
+                    if (num_stop_bit_tx == 0) begin
+                        next_state = TX_IDLE;
+                    end else begin
+                        next_state = TX_STOP;
+                    end
                 end else begin
-                    next_state <= TX_DATA;
+                    next_state = TX_DATA;
                 end
             end
             TX_STOP:begin
-                if () begin
-                    next_state <= TX_IDLE;
+                if (tick_tx && (stop_tx_count == num_stop_bit_tx - 1)) begin
+                    next_state = TX_IDLE;
                 end else begin
-                    next_state <= TX_STOP;
+                    next_state = TX_STOP;
                 end
             end
-            default: next_state <= TX_IDLE
+            default: next_state = TX_IDLE;
         endcase
     end
 
+//Output
+always_comb begin
+    case (current_state)
+        TX_IDLE: begin
+            tx_done_o = 1;
+            tx = 1;
+        end
+        TX_START: begin
+            tx_done_o = 0;
+            tx = 0;
+        end
+        TX_DATA: begin
+            tx_done_o = 0;
+            tx = tx_data_i[data_tx_count];
+        end
+        TX_STOP: begin
+            if ((tick_tx && (stop_tx_count == num_stop_bit_tx - 1)) || (num_stop_bit_tx == 0)) begin
+                tx_done_o = 1;
+            end else begin
+                tx_done_o = 0;
+            end
+                if (parity_en_i) begin
+                    case ({parity_en_i, data_bit_num_i})
+                        3'b000: tx = ~(^tx_data_i[4:0]);
+                        3'b001: tx = ~(^tx_data_i[5:0]);
+                        3'b010: tx = ~(^tx_data_i[6:0]);
+                        3'b011: tx = ~(^tx_data_i[7:0]);
+                        3'b100: tx = (^tx_data_i[4:0]);
+                        3'b101: tx = (^tx_data_i[5:0]);
+                        3'b110: tx = (^tx_data_i[6:0]);
+                        3'b111: tx = (^tx_data_i[7:0]);
+                        default: tx = 1;
+                    endcase
+                end else begin
+                    tx = 1;
+                end
+        end
+        default: begin
+            tx_done_o = 1;
+            tx = 1;
+        end
+    endcase
+end
+
+//Count number of data bit tx and stop bit tx
+always_ff @(posedge clk, negedge rst_n) begin
+    if (!rst_n) begin
+        data_tx_count <= 0;
+        stop_tx_count <= 0;
+    end else begin
+        case (current_state)
+            TX_IDLE: begin
+                data_tx_count <= 0;
+                stop_tx_count <= 0;
+            end
+            TX_START: begin
+                data_tx_count <= 0;
+                stop_tx_count <= 0;
+            end
+            TX_DATA: begin
+                if (tick_tx) begin
+                    data_tx_count <= data_tx_count + 1;
+                end else begin
+                    data_tx_count <= data_tx_count;
+                end
+                stop_tx_count <= 0;
+            end
+            TX_STOP: begin
+                data_tx_count <= data_tx_count;
+                if (tick_tx) begin
+                    stop_tx_count <= stop_tx_count + 1;
+                end else begin
+                    stop_tx_count <= stop_tx_count;
+                end
+            end
+            default: begin
+                data_tx_count <= 0;
+                stop_tx_count <= 0;
+            end
+        endcase
+    end
+end
+
+//Decode number of data bit tx and stop bit tx
+always_comb begin
+    case (data_bit_num_i)
+        2'b00: num_data_bit_tx = 5;
+        2'b01: num_data_bit_tx = 6;
+        2'b10: num_data_bit_tx = 7;
+        2'b11: num_data_bit_tx = 8;
+        default: num_data_bit_tx = 8;
+    endcase
+end
+
+always_comb begin
+    case ({stop_bit_num_i, parity_en_i})
+        2'b00: num_stop_bit_tx = 0;
+        2'b01: num_stop_bit_tx = 1;
+        2'b10: num_stop_bit_tx = 1;
+        2'b11: num_stop_bit_tx = 2;
+        default: num_stop_bit_tx = 0;
+    endcase
+end
+
 endmodule
+
+

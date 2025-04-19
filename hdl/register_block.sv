@@ -13,7 +13,7 @@ module register_block(
     output              parity_error_o,
     output logic        write_en_o,
     output logic        read_en_o,
-    output logic [31:0] prdata_o
+    output logic [31:0] prdata_o,
 
     //Communication with UART signals
     input  logic        tx_done_i,
@@ -42,8 +42,9 @@ localparam  ADDR_CFG_REG     = 'h8;
 localparam  ADDR_CTRL_REG    = 'hc;
 localparam  ADDR_STT_REG     = 'h10;
 
-//Confirm is write
+//Confirm is write/read
 logic write_en = pwrite_i && psel_i && penable_i;
+logic read_en = !pwrite_i && psel_i && penable_i;
 
 //Output read/write enable 
 always_comb begin  
@@ -82,9 +83,9 @@ always_ff @(posedge clk or negedge reset_n) begin
     end else if (write_en && (paddr_i == ADDR_TX_DATA_REG)) begin
         case (pstrb_i)
             4'b0001: tx_data_reg <= {24'b0, pwdata_i[7:0]};
-            4'b0010: tx_data_reg <= {24'b0, pwdata_i[15:8]};
-            4'b0100: tx_data_reg <= {24'b0, pwdata_i[23:16]};
-            4'b1000: tx_data_reg <= {24'b0, pwdata_i[31:24]};
+            4'b0011: tx_data_reg <= {24'b0, pwdata_i[15:0]};
+            4'b0111: tx_data_reg <= {24'b0, pwdata_i[23:0]};
+            4'b1111: tx_data_reg <= {24'b0, pwdata_i[31:0]};
             4'b1111: tx_data_reg <= pwdata_i;
             default: tx_data_reg <= tx_data_reg;
         endcase

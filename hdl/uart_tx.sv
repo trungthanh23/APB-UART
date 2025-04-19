@@ -27,11 +27,10 @@ module uart_tx(
         TX_STOP  =  2'b11
     } current_state, next_state;
 
-    localparam data_tx_count = 0;
-    localparam num_data_bit_tx = 0;
-
-    localparam stop_tx_count = 0;
-    localparam num_stop_bit_tx = 0;
+    logic [3:0] data_tx_count;      
+    logic [1:0] stop_tx_count;      
+    logic [3:0] num_data_bit_tx;    
+    logic [1:0] num_stop_bit_tx;
 
     //Current state
     always_ff @(posedge clk, negedge rst_n) begin
@@ -60,7 +59,7 @@ module uart_tx(
                 end
             end
             TX_DATA:begin
-                if (tick_tx && (data_tx_count == num_data_bit_tx - 1)) begin
+                if (tx_tick && (data_tx_count == num_data_bit_tx - 1)) begin
                     if (num_stop_bit_tx == 0) begin
                         next_state = TX_IDLE;
                     end else begin
@@ -71,7 +70,7 @@ module uart_tx(
                 end
             end
             TX_STOP:begin
-                if (tick_tx && (stop_tx_count == num_stop_bit_tx - 1)) begin
+                if (tx_tick && (stop_tx_count == num_stop_bit_tx - 1)) begin
                     next_state = TX_IDLE;
                 end else begin
                     next_state = TX_STOP;
@@ -97,7 +96,7 @@ always_comb begin
             tx = tx_data_i[data_tx_count];
         end
         TX_STOP: begin
-            if ((tick_tx && (stop_tx_count == num_stop_bit_tx - 1)) || (num_stop_bit_tx == 0)) begin
+            if ((tx_tick && (stop_tx_count == num_stop_bit_tx - 1)) || (num_stop_bit_tx == 0)) begin
                 tx_done_o = 1;
             end else begin
                 tx_done_o = 0;
@@ -115,7 +114,10 @@ always_comb begin
                         default: tx = 1;
                     endcase
                 end else begin
-                    tx = 1;
+                    if (stop_bit_num_i) begin
+                        tx = 1;
+                    end else begin
+                    end
                 end
         end
         default: begin
@@ -141,7 +143,7 @@ always_ff @(posedge clk, negedge rst_n) begin
                 stop_tx_count <= 0;
             end
             TX_DATA: begin
-                if (tick_tx) begin
+                if (tx_tick) begin
                     data_tx_count <= data_tx_count + 1;
                 end else begin
                     data_tx_count <= data_tx_count;
@@ -150,7 +152,7 @@ always_ff @(posedge clk, negedge rst_n) begin
             end
             TX_STOP: begin
                 data_tx_count <= data_tx_count;
-                if (tick_tx) begin
+                if (tx_tick) begin
                     stop_tx_count <= stop_tx_count + 1;
                 end else begin
                     stop_tx_count <= stop_tx_count;

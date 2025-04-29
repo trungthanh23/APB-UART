@@ -101,24 +101,24 @@ always_comb begin
             end else begin
                 tx_done_o = 0;
             end
-                if (parity_en_i) begin
-                    case ({parity_en_i, data_bit_num_i})
-                        3'b000: tx = ~(^tx_data_i[4:0]);
-                        3'b001: tx = ~(^tx_data_i[5:0]);
-                        3'b010: tx = ~(^tx_data_i[6:0]);
-                        3'b011: tx = ~(^tx_data_i[7:0]);
-                        3'b100: tx = (^tx_data_i[4:0]);
-                        3'b101: tx = (^tx_data_i[5:0]);
-                        3'b110: tx = (^tx_data_i[6:0]);
-                        3'b111: tx = (^tx_data_i[7:0]);
-                        default: tx = 1;
-                    endcase
+            if (parity_en_i) begin
+                case ({parity_en_i, data_bit_num_i})
+                    3'b000: tx = ~(^tx_data_i[4:0]);
+                    3'b001: tx = ~(^tx_data_i[5:0]);
+                    3'b010: tx = ~(^tx_data_i[6:0]);
+                    3'b011: tx = ~(^tx_data_i[7:0]);
+                    3'b100: tx = (^tx_data_i[4:0]);
+                    3'b101: tx = (^tx_data_i[5:0]);
+                    3'b110: tx = (^tx_data_i[6:0]);
+                    3'b111: tx = (^tx_data_i[7:0]);
+                    default: tx = 1;
+                endcase
+            end else begin
+                if (stop_bit_num_i) begin
+                    tx = 1;
                 end else begin
-                    if (stop_bit_num_i) begin
-                        tx = 1;
-                    end else begin
-                    end
                 end
+            end
         end
         default: begin
             tx_done_o = 1;

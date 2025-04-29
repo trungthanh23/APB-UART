@@ -1,22 +1,22 @@
 module baudrate_generator#(
-    parameter CFG_BAUDRATE = 115200;
-    parameter CFG_CLK_FREQ = 50000000; 
+    parameter CFG_BAUDRATE = 115200,
+    parameter CFG_CLK_FREQ = 50000000 
 )(
     input clk,
     input rst_n,
     output tx_tick,
-    output rx_tick,
+    output rx_tick
 );
     localparam TX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16);
     localparam RX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16);
-    localparam TX_COUNT_WIDTH = $clog2(TX_COUNT_MAX);
-    localparam RX_COUNT_WIDTH = $clog2(RX_COUNT_MAX);
+    localparam TX_COUNT_WIDTH = $clog2(TX_COUNT_TO);
+    localparam RX_COUNT_WIDTH = $clog2(RX_COUNT_TO);
 
     logic [TX_COUNT_WIDTH-1:0] tx_count;
     logic [RX_COUNT_WIDTH-1:0] rx_count;
 
     //Counting for TX
-    always_ff @(posedge clk or negedge rst_n) begin : proc_tx_count
+    always_ff @(posedge clk or negedge rst_n) begin 
         if(~rst_n) begin
             tx_count <= 0;
         end else begin
@@ -29,7 +29,7 @@ module baudrate_generator#(
     end
 
     //Counting for RX
-    always_ff @(posedge clk or negedge rst_n) begin : proc_rx_count
+    always_ff @(posedge clk or negedge rst_n) begin 
         if(~rst_n) begin
             rx_count <= 0;
         end else begin

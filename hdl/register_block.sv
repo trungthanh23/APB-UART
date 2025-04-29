@@ -83,9 +83,8 @@ always_ff @(posedge clk or negedge reset_n) begin
     end else if (write_en && (paddr_i == ADDR_TX_DATA_REG)) begin
         case (pstrb_i)
             4'b0001: tx_data_reg <= {24'b0, pwdata_i[7:0]};
-            4'b0011: tx_data_reg <= {24'b0, pwdata_i[15:0]};
-            4'b0111: tx_data_reg <= {24'b0, pwdata_i[23:0]};
-            4'b1111: tx_data_reg <= {24'b0, pwdata_i[31:0]};
+            4'b0011: tx_data_reg <= {16'b0, pwdata_i[15:0]};
+            4'b0111: tx_data_reg <= {8'b0, pwdata_i[23:0]};
             4'b1111: tx_data_reg <= pwdata_i;
             default: tx_data_reg <= tx_data_reg;
         endcase

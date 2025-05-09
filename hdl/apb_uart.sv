@@ -25,6 +25,6 @@ module apb_uart baudrate_generator#(
     output              tx,
     output              rst_n
 );
-
+    
 
 endmodule

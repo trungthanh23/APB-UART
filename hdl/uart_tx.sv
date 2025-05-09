@@ -102,6 +102,7 @@ module uart_tx (
 
 
     // Output Tx
+    always_comb begin
         case (current_state)
             TX_IDLE: begin
                 tx = 1;

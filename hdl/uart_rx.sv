@@ -4,7 +4,7 @@ module uart_rx (
     input           rst_n,
 
     // Baudrate generator signals
-    input           tx_tick,
+    input           rx_tick,
 
     //Register block signals
     input         [1 :0]   data_bit_num_i,

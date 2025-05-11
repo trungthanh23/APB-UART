@@ -24,7 +24,33 @@ module uart_core (
 );
 
     uart_tx uart_tx (
-        
+        .clk(clk),
+        .rst_n(rst_n),
+        .tx_tick(tx_tick),
+        .tx_data_i(tx_data_i),
+        .data_bit_num_i(data_bit_num_i),
+        .start_tx_i(start_tx_i),
+        .parity_en_i(parity_en_i),
+        .parity_type_i(parity_type_i),
+        .stop_bit_num_i(stop_bit_num_i),
+        .tx_done_o(tx_done_o),
+        .cts_n(cts_n),
+        .tx(tx),
+    );
+
+    uart_rx uart_rx (
+        .clk(clk),
+        .rst_n(rst_n),
+        .rx_tick(rx_tick),
+        .data_bit_num_i(data_bit_num_i),
+        .start_tx_i(start_tx_i),
+        .parity_en_i(parity_en_i),
+        .parity_type_i(parity_type_i),
+        .stop_bit_num_i(stop_bit_num_i),
+        .rx_done_o(rx_done_o),
+        .rx_done_o(rx_data_o)
+        .rx(rx),
+        .rts_n(rst_n)
     );
     
 endmodule

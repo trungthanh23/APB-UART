@@ -117,8 +117,9 @@ module apb_uart baudrate_generator#(
         .rx(rx),
         .rx_tick(rx_tick),
         .rts_n(rts_n),
-        .tx_done_o(tx_done_reg_uart),
-        .rx_data_o(rx_done_reg_uart)
+        .rx_done_o(rx_done_reg_uart),
+        .parity_error_o(parity_error_reg_uart),
+        .rx_data_o(rx_data_reg_uart)
     );
 
     baudrate_generator baudrate_generator(

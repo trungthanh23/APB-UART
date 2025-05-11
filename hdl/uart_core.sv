@@ -20,6 +20,7 @@ module uart_core (
     input                  rx_tick,
     output  logic          rts_n,
     output  logic          rx_done_o, 
+    output  logic          parity_error_o,
     output  logic [31:0]   rx_data_o
 );
 
@@ -48,9 +49,10 @@ module uart_core (
         .parity_type_i(parity_type_i),
         .stop_bit_num_i(stop_bit_num_i),
         .rx_done_o(rx_done_o),
-        .rx_done_o(rx_data_o)
+        .parity_error_o(parity_error_o),
+        .rx_data_o(rx_data_o),
         .rx(rx),
-        .rts_n(rst_n)
+        .rts_n(rts_n)
     );
     
 endmodule

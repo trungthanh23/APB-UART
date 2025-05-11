@@ -13,6 +13,7 @@ module uart_rx (
     input                  parity_type_i,
     input                  stop_bit_num_i,
     output  logic          rx_done_o, 
+    output  logic          parity_error_o,
     output  logic [31:0]   rx_data_o,
 
     // Peripheral signals

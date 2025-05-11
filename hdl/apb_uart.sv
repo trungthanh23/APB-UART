@@ -1,4 +1,4 @@
-module apb_uart baudrate_generator#(
+module apb_uart #(
     parameter CFG_BAUDRATE = 115200,
     parameter CFG_CLK_FREQ = 50000000 
 )(
@@ -23,7 +23,7 @@ module apb_uart baudrate_generator#(
     input               rx,
     input               cts_n,
     output              tx,
-    output              rst_n
+    output              rts_n
 );
     //apb_slave - regitster_block signals
     wire         parity_error_apb_reg;
@@ -57,6 +57,7 @@ module apb_uart baudrate_generator#(
         .clk(clk),
         .reset_n(reset_n),
         .pclk(pclk),
+        .preset_n(preset_n),
         .psel(psel),
         .penable(penable),
         .pwrite(pwrite),
@@ -79,6 +80,8 @@ module apb_uart baudrate_generator#(
     );
 
     register_block register_block(
+        .clk(clk),
+        .reset_n(reset_n),
         .pwrite_i(pwrite_apb_reg),
         .psel_i(psel_apb_reg),
         .penable_i(penable_apb_reg),

@@ -44,7 +44,6 @@ module uart_core (
         .rst_n(rst_n),
         .rx_tick(rx_tick),
         .data_bit_num_i(data_bit_num_i),
-        .start_tx_i(start_tx_i),
         .parity_en_i(parity_en_i),
         .parity_type_i(parity_type_i),
         .stop_bit_num_i(stop_bit_num_i),

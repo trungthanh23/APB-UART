@@ -105,20 +105,20 @@ always_comb begin
             // pready
             if (penable) begin
                 case (paddr)
-                    ADDR_TX_DATA_REG: begin // tx_data_reg_addr
-                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); // RW
+                    ADDR_TX_DATA_REG: begin 
+                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); 
                     end
-                    ADDR_RX_DATA_REG: begin // rx_data_reg_addr
-                        pready = ~pwrite && read_en_i; // RO
+                    ADDR_RX_DATA_REG: begin 
+                        pready = ~pwrite && read_en_i; 
                     end
-                    ADDR_CFG_REG: begin     // cfg_reg_addr
-                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); //RW
+                    ADDR_CFG_REG: begin     
+                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); 
                     end
-                    ADDR_CTRL_REG: begin    // ctrl_reg_addr
-                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); //RW
+                    ADDR_CTRL_REG: begin   
+                        pready = (pwrite && write_en_i) || (~pwrite && read_en_i); 
                     end
-                    ADDR_STT_REG: begin     // stt_reg_addr
-                        pready = ~pwrite && read_en_i; // RO
+                    ADDR_STT_REG: begin    
+                        pready = ~pwrite && read_en_i; 
                     end
                     default: begin
                         pready = 0;
@@ -130,16 +130,16 @@ always_comb begin
             if (psel && penable && pready) begin
                 case (paddr)
                     ADDR_TX_DATA_REG: begin
-                        pslverr = pwrite ? 0 : 1;
+                        pslverr = pwrite && ~(|(pwdata[31:8])) ? 0 : 1;
                     end
                     ADDR_RX_DATA_REG: begin
                         pslverr = pwrite;
                     end
                     ADDR_CFG_REG: begin
-                        pslverr = pwrite ? 0 : 1;
+                        pslverr = pwrite && ~(|(pwdata[31:5])) ? 0 : 1;
                     end
                     ADDR_CTRL_REG: begin
-                        pslverr = pwrite ? 0 : 1;
+                        pslverr = pwrite && ~(|(pwdata[31:1])) ? 0 : 1;
                     end
                     ADDR_STT_REG: begin
                         pslverr = pwrite ? 1 : parity_error_i;

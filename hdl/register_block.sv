@@ -132,7 +132,7 @@ always_ff @(posedge clk, negedge reset_n) begin
         default: ctrl_reg <= pwdata_i;
       endcase
     end else begin
-        ctrl_reg <= ctrl_reg;
+        ctrl_reg <= 32'b0;
     end
 end
 

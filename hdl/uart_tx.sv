@@ -115,7 +115,7 @@ module uart_tx (
             end
             TX_STOP: begin
                 if (parity_en_i && stop_tx_count == 0) begin
-                case ({parity_type_i, data_bit_num_i})
+                case ({--, data_bit_num_i})
                     3'b000: tx = ~(^tx_data_i[4:0]);
                     3'b001: tx = ~(^tx_data_i[5:0]);
                     3'b010: tx = ~(^tx_data_i[6:0]);

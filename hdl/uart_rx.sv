@@ -1,5 +1,5 @@
 module uart_rx (
-    / Global signals
+    // Global signals
     input           clk,
     input           rst_n,
 

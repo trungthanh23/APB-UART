@@ -36,7 +36,7 @@ module uart_core (
         .stop_bit_num_i(stop_bit_num_i),
         .tx_done_o(tx_done_o),
         .cts_n(cts_n),
-        .tx(tx),
+        .tx(tx)
     );
 
     uart_rx uart_rx (

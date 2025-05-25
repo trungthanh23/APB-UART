@@ -18,9 +18,9 @@ logic                           rts_n;
 
 logic [31:0] read_data;
 
-dti_uart dti_apb_uart_top_i (
+apb_uart apb_uart_top_i (
   .pclk   (clk),
-  .presetn(reset_n),
+  .preset_n(reset_n),
   .clk    (clk),
   .reset_n (reset_n),
   .psel   (psel),

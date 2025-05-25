@@ -25,7 +25,7 @@ module register_block(
     output logic        parity_type_o,
     output logic        start_tx_o,
     output logic [31:0] tx_data_o,
-    output logic [1 :0] data_bit_num_o,
+    output logic [1 :0] data_bit_num_o
 );
 
 //Registers

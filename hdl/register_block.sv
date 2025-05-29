@@ -10,6 +10,7 @@ module register_block(
     input  logic [3 :0] pstrb_i,
     input  logic [31:0] pwdata_i,
     input  logic [11:0] paddr_i,
+
     output              parity_error_o,
     output logic        write_en_o,
     output logic        read_en_o,
@@ -20,13 +21,14 @@ module register_block(
     input  logic        rx_done_i,
     input  logic        parity_error_i,
     input  logic [31:0] rx_data_i,
+    
     output logic        stop_bit_num_o,
     output logic        parity_en_o,
     output logic        parity_type_o,
     output logic        start_tx_o,
-    output logic        host_read_data_o,
     output logic [31:0] tx_data_o,
-    output logic [1 :0] data_bit_num_o
+    output logic [1 :0] data_bit_num_o,
+    output host_read_data_o
 );
 
 //Registers
@@ -44,11 +46,11 @@ localparam  ADDR_CTRL_REG    = 'hc;
 localparam  ADDR_STT_REG     = 'h10;
 
 //Confirm is write/read
-logic write_en;
-assign write_en = pwrite_i && psel_i && penable_i;
-logic read_en; 
+logic write_en ;
+//logic read_en;
+assign  write_en = pwrite_i && psel_i && penable_i;
 assign read_en = !pwrite_i && psel_i && penable_i;
-
+assign host_read_data_o = read_en && (paddr_i == ADDR_RX_DATA_REG);
 //Output read/write enable 
 always_comb begin  
     case (paddr_i)
@@ -134,18 +136,15 @@ always_ff @(posedge clk, negedge reset_n) begin
         4'b1111: ctrl_reg <= pwdata_i;
         default: ctrl_reg <= pwdata_i;
       endcase
-    end else if (tx_done_i == 1) begin
-        ctrl_reg <= 32'b0;
     end else begin
         ctrl_reg <= ctrl_reg;
     end
 end
 
-
 //stt_reg
 always_ff @(posedge clk or negedge reset_n) begin
     if(!reset_n) begin
-        stt_reg <= {31'b0, 1'b1};
+        stt_reg <= 32'b0;
     end else begin
         stt_reg <= {29'b0, parity_error_i, rx_done_i, tx_done_i};
     end
@@ -188,6 +187,5 @@ assign stop_bit_num_o = cfg_reg[2];
 assign parity_en_o   = cfg_reg[3];
 assign parity_type_o = cfg_reg[4];
 assign start_tx_o    = ctrl_reg[0];
-assign host_read_data_o = read_en && (paddr_i == ADDR_RX_DATA_REG);
 
 endmodule

@@ -15,41 +15,41 @@ module test;
     logic                           tx;   //tx output
     logic                           cts_n;
     logic                           rts_n;
-    parameter CFG_BAUDRATE = 115200;
-    parameter CFG_CLK_FREQ = 50000000; 
+    parameter baud_rate = 15; 
 
     logic [31:0] read_data;
     
-    apb_uart #(CFG_BAUDRATE, CFG_CLK_FREQ) apb_uart_i (
-        .pclk   (clk),
-        .preset_n(reset_n),
-        .clk    (clk),
-        .reset_n (reset_n),
-        .psel   (psel),
-        .penable(penable),
-        .pwrite (pwrite),
-        .paddr  (paddr),
-        .pwdata (pwdata),
-        .pstrb  (pstrb),
-        .prdata (prdata),
-        .pready (pready),
-        .pslverr(pslverr),
-        .rx     (rx),
-        .tx     (tx),
-        .cts_n  (cts_n),
-        .rts_n  (rts_n)
+    apb_uart #(.CFG_BAUDRATE(115200),
+                .CFG_CLK_FREQ(50000000)) apb_uart (
+  .pclk   (clk),
+  .preset_n(reset_n),
+  .clk    (clk),
+  .reset_n (reset_n),
+  .psel   (psel),
+  .penable(penable),
+  .pwrite (pwrite),
+  .paddr  (paddr),
+  .pwdata (pwdata),
+  .pstrb  (pstrb),
+  .prdata (prdata),
+  .pready (pready),
+  .pslverr(pslverr),
+  .rx     (rx),
+  .tx     (tx),
+  .cts_n  (cts_n),
+  .rts_n  (rts_n)
   );
 
     
 
     initial begin
         clk = 0;
-        forever #5 clk = ~clk;  // 100MHz clock
+        forever #10 clk = ~clk;  // 50MHz clock
     end
 
 
 
-task Write_tx_data_reg(logic [7:0] tx_data);
+task Write_tx_data_reg(logic [7:0] tx_data); //32'h000000A3
         @(posedge clk);
         psel    = 1'b0;
         penable = 1'b0;
@@ -111,7 +111,7 @@ task Write_tx_data_reg(logic [7:0] tx_data);
         psel    = 1'b0;
         penable = 1'b0;
         pwrite  = 1'b0;
-        pstrb = 4'b0000;
+        pstrb = 4'b0001;
         paddr   = 12'b0;
         pwdata  = 32'b0;
     endtask
@@ -284,39 +284,39 @@ task Write_tx_data_reg(logic [7:0] tx_data);
             integer i;
             integer data_num;
             integer stop_num;
-            case (apb_uart_i.register_block.data_bit_num_o)
+            case (apb_uart.register_block.data_bit_num_o)
                 2'b00: data_num = 5;
                 2'b01: data_num = 6;
                 2'b10: data_num = 7;
                 2'b11: data_num = 8;
             endcase
 
-            case (apb_uart_i.register_block.stop_bit_num_o)
+            case (apb_uart.register_block.stop_bit_num_o)
                 1'b0: stop_num = 1;
                 1'b1: stop_num = 2;
             endcase
 
             rx=1'b0;
-            repeat (16) begin
+            repeat (50000000/115200) begin
                     @(posedge clk); 
             end
 
             for (i=0;i<data_num;i++) begin
                 rx = data[i]; 
-                repeat (16) begin
+                repeat (50000000/115200) begin
                     @(posedge clk);
                 end
             end
 
-            if (apb_uart_i.register_block.parity_en_o) begin
-                rx = (apb_uart_i.register_block.parity_type_o) ? ~(^data) : (^data);
-                repeat (16) begin
+            if (apb_uart.register_block.parity_en_o) begin
+                rx = (apb_uart.register_block.parity_type_o) ? ~(^data) : (^data);//1
+                repeat (50000000/115200) begin
                     @(posedge clk);
                 end
             end
 
             repeat(stop_num) begin
-                repeat (16) begin
+                repeat (50000000/115200) begin
                     @(posedge clk);
                 end
                 rx=1;
@@ -329,18 +329,20 @@ task Write_tx_data_reg(logic [7:0] tx_data);
             integer i;
             integer data_num;
             integer stop_num;
-            case (apb_uart_i.register_block.cfg_reg[1:0])
+
+            case (apb_uart.register_block.cfg_reg[1:0])
                 2'b00: data_num = 5;
                 2'b01: data_num = 6;
                 2'b10: data_num = 7;
                 2'b11: data_num = 8;
             endcase
 
-            case (apb_uart_i.register_block.cfg_reg[2])
+            case (apb_uart.register_block.cfg_reg[2])
                 1'b0: stop_num = 1;
                 1'b1: stop_num = 2;
             endcase
-            repeat (data_num + stop_num + apb_uart_i.register_block.cfg_reg[3]) begin
+
+            repeat (data_num + stop_num + apb_uart.register_block.cfg_reg[3]) begin
                 repeat (16) begin
                     @(posedge clk);
                 end                   
@@ -352,6 +354,7 @@ task Write_tx_data_reg(logic [7:0] tx_data);
 
 
     initial begin
+    cts_n =1'b1;
     reset_n = 0;
     pwdata = 32'h000;
     paddr = 12'h000;
@@ -365,6 +368,7 @@ task Write_tx_data_reg(logic [7:0] tx_data);
         // Nhiệm vụ 1: Ghi dữ liệu và đọc dữ liệu từ các thanh ghi
         begin
             reset_n = 1'b1;
+
             @(posedge clk);
 
             Write_tx_data_reg(32'h000000A3);
@@ -383,19 +387,25 @@ task Write_tx_data_reg(logic [7:0] tx_data);
 
 
         begin
-            wait (apb_uart_i.register_block.start_tx_o == 1);
+            wait (apb_uart.register_block.start_tx_o == 1);
             @(posedge clk);
-
+            cts_n = 1'b0;
             send_tx();
-            wait (apb_uart_i.register_block.tx_done_i);
+            wait (apb_uart.register_block.tx_done_i);
         end
 
         begin
-            wait (apb_uart_i.register_block.start_tx_o == 1);
+            wait (apb_uart.register_block.start_tx_o == 1);
             
-            wait (apb_uart_i.register_block.tx_done_i == 1);
+            wait (apb_uart.register_block.tx_done_i == 1);
             send_rx(8'b10110110);
-            wait (apb_uart_i.register_block.rx_done_i);
+            Read_rx_data_reg();
+            
+            wait (apb_uart.register_block.rx_done_i);
+            send_rx(8'b10110110);
+            Read_rx_data_reg();
+            
+            wait (apb_uart.register_block.rx_done_i);
         end
     join
     @(posedge clk);
@@ -427,12 +437,12 @@ end
 //                 Read_rx_data_reg();
 //                 Read_stt_reg();
 //                 Read_tx_data_reg();
-//                 $display("%b",apb_uart_i.register_block.ctrl_reg[0]);
+//                 $display("%b",apb_uart.register_block.ctrl_reg[0]);
 
 //             end
 
 //             begin
-//                 while(apb_uart_i.register_block.start_tx)
+//                 while(apb_uart.register_block.start_tx)
 //                     begin   
 //                         @(posedge clk);
 //                     end

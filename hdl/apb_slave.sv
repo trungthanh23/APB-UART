@@ -16,6 +16,7 @@ module apb_slave # (
     input  logic [11:0] paddr,
     input  logic [3 :0] pstrb,
     input  logic [31:0] pwdata,
+
     output logic        pready,
     output logic        pslverr,
     output logic [31:0] prdata,
@@ -25,6 +26,7 @@ module apb_slave # (
     input  logic        write_en_i,
     input  logic        read_en_i,
     input  logic [31:0] prdata_i,
+    
     output logic        pwrite_o,
     output logic [3 :0] pstrb_o,
     output logic        psel_o,

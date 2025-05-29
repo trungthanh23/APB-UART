@@ -7,8 +7,8 @@ module baudrate_generator#(
     output tx_tick,
     output rx_tick
 );
-    localparam TX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE);
-    localparam RX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16);
+    localparam TX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE ); //27 =>sau 27 chu ki clk thi tx_tick =1 trong 1 chu kif clk
+    localparam RX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16); //434 => sau 43 chu kif thif 
     localparam TX_COUNT_WIDTH = $clog2(TX_COUNT_TO);
     localparam RX_COUNT_WIDTH = $clog2(RX_COUNT_TO);
 

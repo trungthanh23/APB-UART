@@ -150,6 +150,8 @@ module uart_tx (
                 TX_DATA: begin
                     if (tx_tick) begin
                         data_tx_count <= data_tx_count + 1;
+                    end else begin
+                        data_tx_count <= data_tx_count;
                     end
                     stop_tx_count <= 0;
                 end
@@ -157,6 +159,8 @@ module uart_tx (
                     data_tx_count <= 0;
                     if (tx_tick) begin
                         stop_tx_count <= stop_tx_count + 1;
+                    end else begin
+                        stop_tx_count <=stop_tx_count;
                     end
                 end
                 default: begin

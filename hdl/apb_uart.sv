@@ -48,14 +48,15 @@ module apb_uart #(
     wire         parity_en_reg_uart;
     wire         parity_type_reg_uart;
     wire         start_tx_reg_uart;
+    wire         host_read_data_reg_uart;
 
     //Baudrate signals
     wire         tick_tx;
     wire         tick_rx;
 
     apb_slave apb_slave (
-        .clk(clk),
-        .reset_n(reset_n),
+        .clk(pclk),
+        .reset_n(preset_n),
         .pclk(pclk),
         .preset_n(preset_n),
         .psel(psel),
@@ -80,8 +81,8 @@ module apb_uart #(
     );
 
     register_block register_block(
-        .clk(clk),
-        .reset_n(reset_n),
+        .clk(pclk),
+        .reset_n(preset_n),
         .pwrite_i(pwrite_apb_reg),
         .psel_i(psel_apb_reg),
         .penable_i(penable_apb_reg),
@@ -100,13 +101,14 @@ module apb_uart #(
         .parity_en_o(parity_en_reg_uart),
         .parity_type_o(parity_type_reg_uart),
         .start_tx_o(start_tx_reg_uart),
+        .host_read_data_o(host_read_data_reg_uart),
         .tx_data_o(tx_data_reg_uart),
         .data_bit_num_o(data_bit_num_reg_uart)
     );
 
     uart_core uart_core(
-        .clk(clk),
-        .rst_n(rst_n),
+        .clk(pclk),
+        .rst_n(preset_n),
         .data_bit_num_i(data_bit_num_reg_uart),
         .parity_en_i(parity_en_reg_uart),
         .parity_type_i(parity_type_reg_uart),
@@ -119,6 +121,7 @@ module apb_uart #(
         .tx(tx),
         .rx(rx),
         .rx_tick(rx_tick),
+        .host_read_data_i(host_read_data_reg_uart),
         .rts_n(rts_n),
         .rx_done_o(rx_done_reg_uart),
         .parity_error_o(parity_error_reg_uart),
@@ -126,8 +129,8 @@ module apb_uart #(
     );
 
     baudrate_generator baudrate_generator(
-        .clk(clk),
-        .rst_n(rst_n),
+        .clk(pclk),
+        .rst_n(preset_n),
         .tx_tick(tx_tick),
         .rx_tick(rx_tick)
     );

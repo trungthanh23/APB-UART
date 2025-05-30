@@ -18,6 +18,7 @@ module uart_core (
     //Register block - rx - peripheral
     input                  rx,
     input                  rx_tick,
+    input                  host_read_data_i,
     output  logic          rts_n,
     output  logic          rx_done_o, 
     output  logic          parity_error_o,
@@ -45,6 +46,7 @@ module uart_core (
         .rx_tick(rx_tick),
         .data_bit_num_i(data_bit_num_i),
         .parity_en_i(parity_en_i),
+        .host_read_data_i(host_read_data_i),
         .parity_type_i(parity_type_i),
         .stop_bit_num_i(stop_bit_num_i),
         .rx_done_o(rx_done_o),

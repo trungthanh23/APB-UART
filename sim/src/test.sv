@@ -402,12 +402,18 @@ task Write_tx_data_reg(logic [7:0] tx_data); //32'h000000A3
             Read_rx_data_reg();
             
             wait (apb_uart.register_block.rx_done_i);
-            send_rx(8'b10110110);
+            // send_rx(8'b10110110);
+            // Read_rx_data_reg();
+            
+            // wait (apb_uart.register_block.rx_done_i);
+        end
+    join
+        begin
+    send_rx(8'b11111111);
             Read_rx_data_reg();
             
             wait (apb_uart.register_block.rx_done_i);
         end
-    join
     @(posedge clk);
     $finish;
 end

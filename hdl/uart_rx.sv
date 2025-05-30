@@ -50,7 +50,7 @@ module uart_rx (
     always_comb begin
         case (current_state)
             RX_IDLE: begin
-                if(~rx && (count == 4'd15) && (!rx_data_o)) next_state = RX_DATA;
+                if(~rx && (count == 4'd15) && (!rx_done_o)) next_state = RX_DATA;
                 else next_state = RX_IDLE;
             end
             RX_DATA: begin
@@ -78,6 +78,7 @@ module uart_rx (
                 RX_IDLE: begin
                     stop_rx_count <= 0;
                     data_rx_count <= 0;
+                    //if((~rx_done_o) && (~rx)) count <= 0 ;
                     if (rx_tick) begin
                         if (count != 4'd15) count <= count + 1;
                         else count <= 0;

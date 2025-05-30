@@ -97,11 +97,22 @@ always_ff @(posedge clk or negedge reset_n) begin
 end
 
 //rx_data_reg
+// always_ff @(posedge clk, negedge reset_n) begin
+//     if (!reset_n) begin
+//         rx_data_reg <= 32'b0;
+//     end else begin
+//         rx_data_reg <= rx_data_i;
+//     end
+// end
 always_ff @(posedge clk, negedge reset_n) begin
     if (!reset_n) begin
         rx_data_reg <= 32'b0;
     end else begin
-        rx_data_reg <= rx_data_i;
+        if (rx_done_i) begin
+            rx_data_reg <= rx_data_i;
+        end else begin
+            rx_data_reg <= rx_data_reg;
+        end
     end
 end
 
@@ -152,31 +163,61 @@ always_ff @(posedge clk or negedge reset_n) begin
 end
 
 //Read data logic
-always_comb begin
-  if (~(pwrite_i)) begin
-    case (paddr_i)
-        ADDR_TX_DATA_REG: begin
-            prdata_o = tx_data_reg;
+// always_comb begin
+//   if (~(pwrite_i) && rx_done_i) begin
+//     case (paddr_i)
+//         ADDR_TX_DATA_REG: begin
+//             prdata_o = tx_data_reg;
+//         end
+//         ADDR_RX_DATA_REG: begin
+//             prdata_o = rx_data_reg;
+//         end
+//         ADDR_CFG_REG: begin
+//             prdata_o = cfg_reg;
+//         end
+//         ADDR_CTRL_REG: begin
+//             prdata_o = ctrl_reg;
+//         end
+//         ADDR_STT_REG: begin
+//             prdata_o = stt_reg;
+//         end
+//         default: begin
+//             prdata_o = 32'b0;
+//         end
+//   endcase 
+//   end else begin
+//     prdata_o = 32'b0;
+//   end
+// end
+always_ff @(posedge clk, negedge reset_n) begin
+    if (!reset_n) begin
+        prdata_o <= 32'b0;
+    end else begin
+        if (~(pwrite_i) && rx_done_i) begin
+            case (paddr_i)
+                ADDR_TX_DATA_REG: begin
+                    prdata_o = tx_data_reg;
+                end
+                ADDR_RX_DATA_REG: begin
+                    prdata_o = rx_data_reg;
+                end
+                ADDR_CFG_REG: begin
+                    prdata_o = cfg_reg;
+                end
+                ADDR_CTRL_REG: begin
+                    prdata_o = ctrl_reg;
+                end
+                ADDR_STT_REG: begin
+                    prdata_o = stt_reg;
+                end
+                default: begin
+                    prdata_o = 32'b0;
+                end
+            endcase 
+        end else begin
+            prdata_o = prdata_o;
         end
-        ADDR_RX_DATA_REG: begin
-            prdata_o = rx_data_reg;
-        end
-        ADDR_CFG_REG: begin
-            prdata_o = cfg_reg;
-        end
-        ADDR_CTRL_REG: begin
-            prdata_o = ctrl_reg;
-        end
-        ADDR_STT_REG: begin
-            prdata_o = stt_reg;
-        end
-        default: begin
-            prdata_o = 32'b0;
-        end
-  endcase 
-  end else begin
-    prdata_o = 32'b0;
-  end
+    end
 end
 
 assign parity_error_o = stt_reg[2];

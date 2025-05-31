@@ -8,7 +8,7 @@ module apb_uart #(
 
     //Communication with CPU signal
     input               pclk,
-    input               preset_n,
+    input               presetn,
     input               psel,
     input  logic        penable,
     input  logic        pwrite,
@@ -56,9 +56,9 @@ module apb_uart #(
 
     apb_slave apb_slave (
         .clk(pclk),
-        .reset_n(preset_n),
+        .reset_n(presetn),
         .pclk(pclk),
-        .preset_n(preset_n),
+        .presetn(presetn),
         .psel(psel),
         .penable(penable),
         .pwrite(pwrite),
@@ -82,7 +82,7 @@ module apb_uart #(
 
     register_block register_block(
         .clk(pclk),
-        .reset_n(preset_n),
+        .reset_n(presetn),
         .pwrite_i(pwrite_apb_reg),
         .psel_i(psel_apb_reg),
         .penable_i(penable_apb_reg),
@@ -108,7 +108,7 @@ module apb_uart #(
 
     uart_core uart_core(
         .clk(pclk),
-        .rst_n(preset_n),
+        .rst_n(presetn),
         .data_bit_num_i(data_bit_num_reg_uart),
         .parity_en_i(parity_en_reg_uart),
         .parity_type_i(parity_type_reg_uart),
@@ -130,7 +130,7 @@ module apb_uart #(
 
     baudrate_generator baudrate_generator(
         .clk(pclk),
-        .rst_n(preset_n),
+        .rst_n(presetn),
         .tx_tick(tx_tick),
         .rx_tick(rx_tick)
     );

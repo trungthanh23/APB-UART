@@ -9,7 +9,7 @@ module apb_slave # (
 
     //Communication with CPU signal
     input               pclk,
-    input               preset_n,
+    input               presetn,
     input               psel,
     input  logic        penable,
     input  logic        pwrite,
@@ -44,8 +44,8 @@ localparam  ADDR_CTRL_REG    = 'hc;
 localparam  ADDR_STT_REG     = 'h10;
 
 //Curent_state
-always_ff @(posedge pclk, negedge preset_n) begin
-    if (~preset_n) begin
+always_ff @(posedge pclk, negedge presetn) begin
+    if (~presetn) begin
         current_state <= APB_IDLE;
     end else begin
         current_state <= next_state;

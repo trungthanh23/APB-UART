@@ -44,7 +44,6 @@ module uart_rx (
     always_comb begin
         case (current_state)
             RX_IDLE: begin
-                // Chỉ chuyển sang RX_START khi có bit start và dữ liệu cũ đã được đọc
                 if (~rx && !rx_done_o) next_state = RX_START;
                 else next_state = RX_IDLE;
             end
@@ -73,15 +72,12 @@ module uart_rx (
             data_reg <= 0;
             stop_reg <= 0;
             count <= 0;
-            rx_done_o <= 0;
-            rts_n <= 1;
         end else begin
             case (current_state)
                 RX_IDLE: begin
                     stop_rx_count <= 0;
                     data_rx_count <= 0;
                     count <= 0;
-                    // Không reset rx_done_o và rts_n ở đây, để giữ trạng thái cho đến khi host đọc
                 end
                 RX_START: begin
                     if (rx_tick) begin
@@ -134,9 +130,9 @@ module uart_rx (
         end else begin
             if (current_state == RX_STOP && stop_rx_count == num_stop_bit_rx && count == 4'd15) begin
                 rx_done_o <= 1;
-                rts_n <= 0; // Báo hiệu dữ liệu sẵn sàng
+                rts_n <= 0; 
             end else if (host_read_data_i) begin
-                rx_done_o <= 0; // Reset khi host đọc xong
+                rx_done_o <= 0; 
                 rts_n <= 1;
             end else begin
                 rx_done_o <= rx_done_o;

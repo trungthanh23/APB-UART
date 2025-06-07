@@ -19,6 +19,7 @@ module register_block(
     input  logic        tx_done_i,
     input  logic        rx_done_i,
     input  logic        parity_error_i,
+    input  logic        tx_start_ack_i,
     input  logic [31:0] rx_data_i,
     output logic        stop_bit_num_o,
     output logic        parity_en_o,
@@ -97,13 +98,6 @@ always_ff @(posedge clk or negedge reset_n) begin
 end
 
 //rx_data_reg
-// always_ff @(posedge clk, negedge reset_n) begin
-//     if (!reset_n) begin
-//         rx_data_reg <= 32'b0;
-//     end else begin
-//         rx_data_reg <= rx_data_i;
-//     end
-// end
 always_ff @(posedge clk, negedge reset_n) begin
     if (!reset_n) begin
         rx_data_reg <= 32'b0;
@@ -145,7 +139,7 @@ always_ff @(posedge clk, negedge reset_n) begin
         4'b1111: ctrl_reg <= pwdata_i;
         default: ctrl_reg <= pwdata_i;
       endcase
-    end else if (tx_done_i == 1) begin
+    end else if (tx_start_ack_i) begin
         ctrl_reg <= 32'b0;
     end else begin
         ctrl_reg <= ctrl_reg;
@@ -163,32 +157,6 @@ always_ff @(posedge clk or negedge reset_n) begin
 end
 
 //Read data logic
-// always_comb begin
-//   if (~(pwrite_i) && rx_done_i) begin
-//     case (paddr_i)
-//         ADDR_TX_DATA_REG: begin
-//             prdata_o = tx_data_reg;
-//         end
-//         ADDR_RX_DATA_REG: begin
-//             prdata_o = rx_data_reg;
-//         end
-//         ADDR_CFG_REG: begin
-//             prdata_o = cfg_reg;
-//         end
-//         ADDR_CTRL_REG: begin
-//             prdata_o = ctrl_reg;
-//         end
-//         ADDR_STT_REG: begin
-//             prdata_o = stt_reg;
-//         end
-//         default: begin
-//             prdata_o = 32'b0;
-//         end
-//   endcase 
-//   end else begin
-//     prdata_o = 32'b0;
-//   end
-// end
 always_ff @(posedge clk, negedge reset_n) begin
     if (!reset_n) begin
         prdata_o <= 32'b0;
@@ -196,22 +164,22 @@ always_ff @(posedge clk, negedge reset_n) begin
         if (~(pwrite_i) && rx_done_i) begin
             case (paddr_i)
                 ADDR_TX_DATA_REG: begin
-                    prdata_o = tx_data_reg;
+                    prdata_o <= tx_data_reg;
                 end
                 ADDR_RX_DATA_REG: begin
-                    prdata_o = rx_data_reg;
+                    prdata_o <= rx_data_reg;
                 end
                 ADDR_CFG_REG: begin
-                    prdata_o = cfg_reg;
+                    prdata_o <= cfg_reg;
                 end
                 ADDR_CTRL_REG: begin
-                    prdata_o = ctrl_reg;
+                    prdata_o <= ctrl_reg;
                 end
                 ADDR_STT_REG: begin
-                    prdata_o = stt_reg;
+                    prdata_o <= stt_reg;
                 end
                 default: begin
-                    prdata_o = 32'b0;
+                    prdata_o <= 32'b0;
                 end
             endcase 
         end else begin

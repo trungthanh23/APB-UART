@@ -1,47 +1,57 @@
-module baudrate_generator#(
+module baudrate_generator #(
     parameter CFG_BAUDRATE = 115200,
     parameter CFG_CLK_FREQ = 50000000 
 )(
     input clk,
-    input rst_n,
+    input reset_n,
+    input tx_enable,  
+    input rx_enable, 
     output tx_tick,
     output rx_tick
 );
-    localparam TX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE);
-    localparam RX_COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16);
-    localparam TX_COUNT_WIDTH = $clog2(TX_COUNT_TO);
-    localparam RX_COUNT_WIDTH = $clog2(RX_COUNT_TO);
+    localparam COUNT_TO = CFG_CLK_FREQ / (CFG_BAUDRATE * 16);
+    localparam COUNT_WIDTH = $clog2(COUNT_TO);
 
-    logic [TX_COUNT_WIDTH-1:0] tx_count;
-    logic [RX_COUNT_WIDTH-1:0] rx_count;
+    logic [COUNT_WIDTH-1:0] tx_current_count, tx_next_count;
+    logic [COUNT_WIDTH-1:0] rx_current_count, rx_next_count;
 
-    //Counting for TX
-    always_ff @(posedge clk or negedge rst_n) begin 
-        if(~rst_n) begin
-            tx_count <= 0;
-        end else begin
-            if (tx_count != TX_COUNT_TO) begin
-                tx_count <= tx_count + 1;
-            end else begin
-                tx_count <= 0;
-            end
+    // TX: Current count
+    always_ff @(posedge clk or negedge reset_n) begin 
+        if (~reset_n) begin
+            tx_current_count <= 0;
+        end else if (tx_enable) begin 
+            tx_current_count <= tx_next_count;
         end
     end
 
-    //Counting for RX
-    always_ff @(posedge clk or negedge rst_n) begin 
-        if(~rst_n) begin
-            rx_count <= 0;
+    // TX: Next count
+    always_comb begin
+        if (tx_current_count != COUNT_TO) begin
+            tx_next_count = tx_current_count + 1;
         end else begin
-            if (rx_count != RX_COUNT_TO) begin
-                rx_count <= rx_count + 1;
-            end else begin
-                rx_count <= 0;
-            end
+            tx_next_count = 0;
         end
     end
 
-    //Tick generation for TX and RX
-    assign tx_tick = (tx_count == TX_COUNT_TO);
-    assign rx_tick = (rx_count == RX_COUNT_TO);
+    // RX: Current count 
+    always_ff @(posedge clk or negedge reset_n) begin 
+        if (~reset_n) begin
+            rx_current_count <= 0;
+        end else if (rx_enable) begin 
+            rx_current_count <= rx_next_count;
+        end
+    end
+
+    // RX: Next count
+    always_comb begin
+        if (rx_current_count != COUNT_TO) begin
+            rx_next_count = rx_current_count + 1;
+        end else begin
+            rx_next_count = 0;
+        end
+    end
+
+    // Tick generation for TX and RX
+    assign tx_tick = tx_enable && (tx_current_count == COUNT_TO); 
+    assign rx_tick = rx_enable && (rx_current_count == COUNT_TO); 
 endmodule

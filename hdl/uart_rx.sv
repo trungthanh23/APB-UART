@@ -1,6 +1,6 @@
 module uart_rx (
     input                  clk,
-    input                  rst_n,
+    input                  reset_n,
     input                  rx_tick,
     input         [1:0]    data_bit_num_i,
     input                  parity_en_i,
@@ -11,7 +11,8 @@ module uart_rx (
     output logic           parity_error_o,
     output logic [31:0]    rx_data_o,
     input                  rx,
-    output logic           rts_n
+    output logic           rts_n,
+    output logic           rx_enable
 );
 
     enum logic [2:0] {
@@ -32,8 +33,8 @@ module uart_rx (
     logic       parity_cal_reg;
 
     // Current state
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
             current_state <= RX_IDLE;
         end else begin
             current_state <= next_state;
@@ -65,8 +66,8 @@ module uart_rx (
     end
 
     // Sampling logic
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (~rst_n) begin
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (~reset_n) begin
             stop_rx_count <= 0;
             data_rx_count <= 0;
             data_reg <= 0;
@@ -122,9 +123,17 @@ module uart_rx (
         end
     end
 
+    // Enable rx_tick
+    always_comb begin
+        case (current_state)
+            RX_IDLE: rx_enable = 0;
+            default: rx_enable = 1; 
+        endcase
+    end
+
     // Config rx_done_o and rts_n
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (~rst_n) begin
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (~reset_n) begin
             rx_done_o <= 0;
             rts_n <= 1;
         end else begin
@@ -142,8 +151,8 @@ module uart_rx (
     end
 
     // Parity received
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (~rst_n) begin
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (~reset_n) begin
             parity_received <= 0;
         end else if (current_state == RX_STOP && stop_rx_count == 1 && count == 4'd7) begin
             parity_received <= 1;
@@ -153,8 +162,8 @@ module uart_rx (
     end
 
     // Parity calculator
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (~rst_n) begin
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (~reset_n) begin
             parity_cal_reg <= 0;
         end else if ((data_rx_count == num_data_bit_rx) && (count == 4'd15) && parity_en_i) begin
             case ({parity_type_i, data_bit_num_i})

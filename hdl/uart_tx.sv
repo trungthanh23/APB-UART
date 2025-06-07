@@ -1,10 +1,11 @@
 module uart_tx (
     // Global signals
     input           clk,
-    input           rst_n,
+    input           reset_n,
 
     // Baudrate generator signals
     input           tx_tick,
+    output logic    tx_enable,
 
     // Register block signals
     input   [31:0]  tx_data_i,
@@ -14,6 +15,7 @@ module uart_tx (
     input           parity_type_i,
     input           stop_bit_num_i,
     output  logic   tx_done_o,
+    output  logic   tx_start_ack_o,
 
     // Peripheral signals 
     input           cts_n,
@@ -27,19 +29,39 @@ module uart_tx (
         TX_STOP  = 2'b11
     } current_state, next_state;
 
-    logic [3:0] data_tx_count;      
-    logic [1:0] stop_tx_count;      
+    logic [3:0] data_current_count, data_next_count;      
+    logic [1:0] stop_current_count, stop_next_count;      
+    logic [3:0] tick_current_count, tick_next_count; 
     logic [3:0] num_data_bit_tx;    
     logic [1:0] num_stop_bit_tx;
-    logic       start_pending;      
 
-    
-    // Current state
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            current_state <= TX_IDLE;
+    // Tick counter block
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            tick_current_count <= 0;
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+            tick_current_count <= 0;
         end else if (tx_tick) begin
+            tick_current_count <= tick_next_count;
+        end
+    end
+
+    always_comb begin
+        if (tick_current_count == 4'd15) begin
+            tick_next_count = 0;
+        end else begin
+            tick_next_count = tick_current_count + 1;
+        end
+    end
+
+    // Current state
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            current_state <= TX_IDLE;
+        end else if (tx_tick && tick_current_count == 4'd15) begin
             current_state <= next_state;
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+            current_state <= TX_START;
         end
     end
 
@@ -47,29 +69,29 @@ module uart_tx (
     always_comb begin
         case (current_state)
             TX_IDLE: begin
-                if (start_pending && tx_tick && !cts_n) begin
+                if (start_tx_i && !cts_n) begin
                     next_state = TX_START;
                 end else begin
                     next_state = TX_IDLE;
                 end
             end
             TX_START: begin
-                if (tx_tick) begin
+                if (tick_current_count == 4'd15) begin
                     next_state = TX_DATA;
                 end else begin
                     next_state = TX_START;
                 end
             end
             TX_DATA: begin
-                if (tx_tick && data_tx_count == num_data_bit_tx - 1) begin
+                if (tick_current_count == 4'd15 && data_current_count == num_data_bit_tx - 1) begin
                     next_state = TX_STOP;
                 end else begin
                     next_state = TX_DATA;
                 end
             end
             TX_STOP: begin
-                if (tx_tick && stop_tx_count == num_stop_bit_tx - 1) begin
-                    if (start_pending && !cts_n) begin
+                if (tick_current_count == 4'd15 && stop_current_count == num_stop_bit_tx - 1) begin
+                    if (start_tx_i && !cts_n) begin
                         next_state = TX_START;
                     end else begin
                         next_state = TX_IDLE;
@@ -82,24 +104,34 @@ module uart_tx (
         endcase
     end
 
-    //Output tx_done_o
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            start_pending <= 0;
-            tx_done_o <= 1;
+    // Handshake signal tx_start_ack
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            tx_start_ack_o <= 0;
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+            tx_start_ack_o <= 1; 
         end else begin
-            if (start_tx_i && current_state == TX_IDLE) begin
-                start_pending <= 1;
-                tx_done_o <= 0; 
-            end else if (tx_tick && current_state == TX_START) begin
-                start_pending <= 0;
-            end else if (tx_tick && current_state == TX_STOP && stop_tx_count == num_stop_bit_tx - 1) begin
-                start_pending <= 0;
-                tx_done_o <= 1; 
-            end
+            tx_start_ack_o <= 0; 
         end
     end
 
+    always_comb begin
+        case (current_state)
+            TX_IDLE: tx_enable = 0;
+            default: tx_enable = 1; 
+        endcase
+    end
+
+    // Output tx_done_o
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            tx_done_o <= 1;
+        end else if (start_tx_i && current_state == TX_IDLE) begin
+            tx_done_o <= 0; 
+        end else if (tx_tick && tick_current_count == 4'd15 && current_state == TX_STOP && stop_current_count == num_stop_bit_tx - 1) begin
+            tx_done_o <= 1; 
+        end
+    end
 
     // Output Tx
     always_comb begin
@@ -111,24 +143,25 @@ module uart_tx (
                 tx = 0; 
             end
             TX_DATA: begin
-                tx = tx_data_i[data_tx_count];
+                tx = tx_data_i[data_current_count];
             end
             TX_STOP: begin
-                if (parity_en_i && stop_tx_count == 0) begin
-                case ({parity_type_i, data_bit_num_i})
-                    3'b000: tx = ~(^tx_data_i[4:0]);
-                    3'b001: tx = ~(^tx_data_i[5:0]);
-                    3'b010: tx = ~(^tx_data_i[6:0]);
-                    3'b011: tx = ~(^tx_data_i[7:0]);
-                    3'b100: tx = (^tx_data_i[4:0]);
-                    3'b101: tx = (^tx_data_i[5:0]);
-                    3'b110: tx = (^tx_data_i[6:0]);
-                    3'b111: tx = (^tx_data_i[7:0]);
-                    default: tx = 1;
-                endcase
-            end else begin
-                tx = 1; 
-            end
+                if (parity_en_i && stop_current_count == 0) begin
+                    case ({parity_type_i, data_bit_num_i})
+                        3'b000: tx = ~(^tx_data_i[4:0]);
+                        3'b001: tx = ~(^tx_data_i[5:0]);
+                        3'b010: tx = ~(^tx_data_i[6:0]);
+                        3'b011: tx = ~(^tx_data_i[7:0]);
+                        3'b100: tx = (^tx_data_i[4:0]);
+                        
+                        3'b101: tx = (^tx_data_i[5:0]);
+                        3'b110: tx = (^tx_data_i[6:0]);
+                        3'b111: tx = (^tx_data_i[7:0]);
+                        default: tx = 1;
+                    endcase
+                end else begin
+                    tx = 1; 
+                end
             end
             default: begin
                 tx = 1;
@@ -136,41 +169,54 @@ module uart_tx (
         endcase
     end
 
-    // Count number of data bits and stop bits
-    always_ff @(posedge clk, negedge rst_n) begin
-        if (!rst_n) begin
-            data_tx_count <= 0;
-            stop_tx_count <= 0;
-        end else begin
-            case (current_state)
-                TX_IDLE, TX_START: begin
-                    data_tx_count <= 0;
-                    stop_tx_count <= 0;
-                end
-                TX_DATA: begin
-                    if (tx_tick) begin
-                        data_tx_count <= data_tx_count + 1;
-                    end else begin
-                        data_tx_count <= data_tx_count;
-                    end
-                    stop_tx_count <= 0;
-                end
-                TX_STOP: begin
-                    data_tx_count <= 0;
-                    if (tx_tick) begin
-                        stop_tx_count <= stop_tx_count + 1;
-                    end else begin
-                        stop_tx_count <=stop_tx_count;
-                    end
-                end
-                default: begin
-                    data_tx_count <= 0;
-                    stop_tx_count <= 0;
-                end
-            endcase
+    // Count number of data bits
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            data_current_count <= 0;
+        end else if (tx_tick && tick_current_count == 4'd15) begin
+            data_current_count <= data_next_count;
         end
     end
 
+    always_comb begin
+        case (current_state)
+            TX_IDLE, TX_START: begin
+                data_next_count = 0;
+            end
+            TX_DATA: begin
+                data_next_count = data_current_count + 1;
+            end
+            TX_STOP: begin
+                data_next_count = 0;
+            end
+            default: begin
+                data_next_count = 0;
+            end
+        endcase
+    end
+
+    // Count number of stop bits
+    always_ff @(posedge clk, negedge reset_n) begin
+        if (!reset_n) begin
+            stop_current_count <= 0;
+        end else if (tx_tick && tick_current_count == 4'd15) begin
+            stop_current_count <= stop_next_count;
+        end
+    end
+
+    always_comb begin
+        case (current_state)
+            TX_IDLE, TX_START, TX_DATA: begin
+                stop_next_count = 0;
+            end
+            TX_STOP: begin
+                stop_next_count = stop_current_count + 1;
+            end
+            default: begin
+                stop_next_count = 0;
+            end
+        endcase
+    end
 
     // Decode number bits in state data
     always_comb begin
@@ -193,5 +239,4 @@ module uart_tx (
             default: num_stop_bit_tx = 1;
         endcase
     end
-
 endmodule

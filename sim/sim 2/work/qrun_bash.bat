@@ -1,0 +1,3 @@
+vlog -64 -f filelist_com.f -f filelist_rtl.f +cover=bcefs -l ./log/vlogr.log
+vlog -64 -f filelist_com.f -f filelist_vsim.f +incdir+../libs/uvm-1.1d/src -f filelist_tb.f -l ./log/vlogt.log
+vsim -c apb_uart_top -wlf vsim.wlf -solvefaildebug -assertdebug -sva -coverage -voptargs=+acc -l ./log/vsim.log +UVM_VERBOSITY=UVM_MEDIUM +UVM_TESTNAME=apb_uart_standard_test -sv_lib ../libs/uvm-1.1d/lib/uvm_dpiWin64 -do "coverage save -assert -directive -cvg -code bcefs -onexit ./ucdb/apb_uart_standard_test.ucdb; add wave -r /apb_uart_top/*; run -all; quit"

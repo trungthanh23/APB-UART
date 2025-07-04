@@ -1,0 +1,13 @@
+#!/bin/bash
+reset
+
+ccflags_dyn="-fPIC"
+ldflags_dyn="-shared"
+
+echo "c++ -Wno-deprecated ${ccflags_dyn} ${ldflags_dyn} -DQUESTA -I ${MTI_HOME}/include -o uvm_dpi.so ${UVM_HOME}/src/dpi/uvm_dpi.cc"
+c++ -Wno-deprecated ${ccflags_dyn} ${ldflags_dyn} -DQUESTA -I ${MTI_HOME}/include -o uvm_dpi.so ${UVM_HOME}/src/dpi/uvm_dpi.cc
+
+alias vlb='reset; rm -rf work; vlib work'
+alias vlg='vlog -f filelist_sim.f -f filelist_tb.f -l vlogt.log'
+alias vsm='vsim -c test_top -wlf vsim.wlf -solvefaildebug -assertdebug -sva -voptargs=+acc=npr -l vsim.log +UVM_VERBOSITY=UVM_MEDIUM -sv_lib uvm_dpi -do "add wave -r /test_top/*; run -all; quit";'
+alias vsm_debug='vsim -c test_top -wlf vsim.wlf -solvefaildebug -assertdebug -sva -voptargs=+acc=npr -l vsim.log +UVM_VERBOSITY=UVM_DEBUG -sv_lib uvm_dpi -do "add wave -r /test_top/*; run -all; quit";'

@@ -1,0 +1,158 @@
+# vsim -c apb_uart_top -wlf vsim.wlf -solvefaildebug -assertdebug -sva -coverage -voptargs="+acc" -l ./log/vsim.log "+UVM_VERBOSITY=UVM_MEDIUM" "+UVM_TESTNAME=apb_uart_standard_test" -sv_lib ../libs/uvm-1.1d/lib/uvm_dpiWin64 -do "coverage save -assert -directive -cvg -code bcefs -onexit ./ucdb/apb_uart_standard_test.ucdb; add wave -r /apb_uart_top/*; run -all; quit" 
+# Start time: 15:00:24 on Jun 06,2025
+# ** Note: (vsim-3813) Design is being optimized due to module recompilation...
+# ** Note: (vopt-143) Recognized 1 FSM in module "uart_tx(fast)".
+# //  Questa Sim-64
+# //  Version 2021.1 win64 Jan 19 2021
+# //
+# //  Copyright 1991-2021 Mentor Graphics Corporation
+# //  All Rights Reserved.
+# //
+# //  QuestaSim and its associated documentation contain trade
+# //  secrets and commercial or financial information that are the property of
+# //  Mentor Graphics Corporation and are privileged, confidential,
+# //  and exempt from disclosure under the Freedom of Information Act,
+# //  5 U.S.C. Section 552. Furthermore, this information
+# //  is prohibited from disclosure under the Trade Secrets Act,
+# //  18 U.S.C. Section 1905.
+# //
+# Loading sv_std.std
+# Loading work.dti_sys_intf(fast)
+# Loading mtiUvm.uvm_pkg(fast)
+# Loading work.dti_uart_pkg(fast)
+# Loading work.dti_sysclk_dynamo_pkg(fast)
+# Loading work.dti_uart_regs_pkg(fast)
+# Loading work.uart_seq_pkg(fast)
+# Loading work.dti_apb_pkg(fast)
+# Loading work.apb_seq_pkg(fast)
+# Loading mtiUvm.questa_uvm_pkg(fast)
+# Loading work.apb_uart_top(fast)
+# Loading work.dti_sys_intf(fast__2)
+# Loading work.apb_uart(fast)
+# Loading work.apb_slave(fast)
+# Loading work.register_block(fast)
+# Loading work.uart_core(fast)
+# Loading work.uart_tx(fast)
+# Loading work.uart_rx(fast)
+# Loading work.baudrate_generator(fast)
+# Loading .\../libs/uvm-1.1d/lib/uvm_dpiWin64.dll
+# coverage save -assert -directive -cvg -code bcefs -onexit ./ucdb/apb_uart_standard_test.ucdb
+#  add wave -r /apb_uart_top/*
+#  run -all
+# ----------------------------------------------------------------
+# UVM-1.1d
+# (C) 2007-2013 Mentor Graphics Corporation
+# (C) 2007-2013 Cadence Design Systems, Inc.
+# (C) 2006-2013 Synopsys, Inc.
+# (C) 2011-2013 Cypress Semiconductor Corp.
+# ----------------------------------------------------------------
+# 
+#   ***********       IMPORTANT RELEASE NOTES         ************
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_NO_DEPRECATED undefined.
+#   See http://www.eda.org/svdb/view.php?id=3313 for more details.
+# 
+#   You are using a version of the UVM library that has been compiled
+#   with `UVM_OBJECT_MUST_HAVE_CONSTRUCTOR undefined.
+#   See http://www.eda.org/svdb/view.php?id=3770 for more details.
+# 
+#       (Specify +UVM_NO_RELNOTES to turn off this notice)
+# 
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(277) @ 0: reporter [Questa UVM] QUESTA_UVM-1.2.3
+# UVM_INFO verilog_src/questa_uvm_pkg-1.2/src/questa_uvm_pkg.sv(278) @ 0: reporter [Questa UVM]  questa_uvm::init(+struct)
+# UVM_INFO @ 0: reporter [RNTST] Running test apb_uart_standard_test...
+# UVM_INFO ../src/uvm_testcase/apb_uart_base_test.sv(37) @ 0: uvm_test_top [uvm_test_top] Build Phase
+# UVM_INFO ../libs/dti_uart_vip/src/dti_uart_configuration.sv(17) @ 0: reporter [randomize_bit_rate] frequency=10MHz baudrate=9600 bit_rate=104200ns
+# UVM_INFO ../src/test_comp/../uvm_comp/apb_uart_env.sv(60) @ 0: uvm_test_top.env [uvm_test_top.env] Build phase
+# UVM_INFO ../src/test_comp/../uvm_comp/apb_uart_env.sv(95) @ 0: uvm_test_top.env [uvm_test_top.env] Connect phase
+# UVM_INFO ../src/test_comp/../uvm_comp/apb_uart_env.sv(114) @ 0: uvm_test_top.env [uvm_test_top.env] End-of-Elaboration Phase
+# UVM_INFO @ 0: reporter [UVMTOP] UVM testbench topology:
+# -------------------------------------------------------------------------------------
+# Name                       Type                                      Size  Value     
+# -------------------------------------------------------------------------------------
+# uvm_test_top               apb_uart_standard_test                    -     @493      
+#   env                      apb_uart_env                              -     @500      
+#     apb_agent              dti_apb_master_agent                      -     @534      
+#       driver               dti_apb_master_driver                     -     @759      
+#         rsp_port           uvm_analysis_port                         -     @774      
+#         seq_item_port      uvm_seq_item_pull_port                    -     @766      
+#       monitor              dti_apb_master_monitor                    -     @643      
+#         ap                 uvm_analysis_port                         -     @783      
+#       sequencer            dti_apb_master_sequencer                  -     @650      
+#         rsp_export         uvm_analysis_export                       -     @657      
+#         seq_item_export    uvm_seq_item_pull_imp                     -     @751      
+#         arbitration_queue  array                                     0     -         
+#         lock_queue         array                                     0     -         
+#         num_last_reqs      integral                                  32    'd1       
+#         num_last_rsps      integral                                  32    'd1       
+#       is_active            uvm_active_passive_enum                   1     UVM_ACTIVE
+#     apb_predictor          uvm_reg_predictor #(dti_apb_master_item)  -     @542      
+#       bus_in               uvm_analysis_imp                          -     @549      
+#       reg_ap               uvm_analysis_port                         -     @557      
+#     sys_agent              dti_sysclk_agent                          -     @527      
+#       drv                  dti_sysclk_dynamo_drv                     -     @796      
+#         rsp_port           uvm_analysis_port                         -     @811      
+#         seq_item_port      uvm_seq_item_pull_port                    -     @803      
+#       seqr                 dti_sysclk_dynamo_seqr                    -     @819      
+#         rsp_export         uvm_analysis_export                       -     @826      
+#         seq_item_export    uvm_seq_item_pull_imp                     -     @920      
+#         arbitration_queue  array                                     0     -         
+#         lock_queue         array                                     0     -         
+#         num_last_reqs      integral                                  32    'd1       
+#         num_last_rsps      integral                                  32    'd1       
+#     uart_rx                dti_uart_rx                               -     @627      
+#       driver               dti_uart_rx_driver                        -     @1052     
+#         rsp_port           uvm_analysis_port                         -     @1067     
+#         seq_item_port      uvm_seq_item_pull_port                    -     @1059     
+#       monitor              dti_uart_rx_monitor                       -     @936      
+#         out_monitor_port   uvm_analysis_port                         -     @1076     
+#       sequencer            dti_uart_rx_sequencer                     -     @943      
+#         rsp_export         uvm_analysis_export                       -     @950      
+#         seq_item_export    uvm_seq_item_pull_imp                     -     @1044     
+#         arbitration_queue  array                                     0     -         
+#         lock_queue         array                                     0     -         
+#         num_last_reqs      integral                                  32    'd1       
+#         num_last_rsps      integral                                  32    'd1       
+#     uart_tx                dti_uart_tx                               -     @620      
+#       driver               dti_uart_tx_driver                        -     @1210     
+#         rsp_port           uvm_analysis_port                         -     @1225     
+#         seq_item_port      uvm_seq_item_pull_port                    -     @1217     
+#       monitor              dti_uart_tx_monitor                       -     @1094     
+#         out_monitor_port   uvm_analysis_port                         -     @1234     
+#       sequencer            dti_uart_tx_sequencer                     -     @1101     
+#         rsp_export         uvm_analysis_export                       -     @1108     
+#         seq_item_export    uvm_seq_item_pull_imp                     -     @1202     
+#         arbitration_queue  array                                     0     -         
+#         lock_queue         array                                     0     -         
+#         num_last_reqs      integral                                  32    'd1       
+#         num_last_rsps      integral                                  32    'd1       
+# -------------------------------------------------------------------------------------
+# 
+# UVM_INFO ../src/uvm_testcase/apb_uart_base_test.sv(71) @ 0: uvm_test_top [run_phase] Starting of the test apb_uart_base_test
+# @ 300000    : rx_seq
+# @ 300000    : tx_seq
+# @ 300001    : seq_w_cfg
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300300: uvm_test_top.env.apb_agent.monitor [apb monitor] write addr : 00000008
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300300: uvm_test_top.env.apb_agent.monitor [apb monitor] write data : 0000000b
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300300: uvm_test_top.env.apb_agent.monitor [apb monitor] write to analysis port
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300300: uvm_test_top.env.apb_agent.monitor [apb monitor] write analysis port done!
+# @ 300400    : seq_w_tx
+# tx_data_frame = 17
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300700: uvm_test_top.env.apb_agent.monitor [apb monitor] write addr : 00000000
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300700: uvm_test_top.env.apb_agent.monitor [apb monitor] write data : 00000017
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300700: uvm_test_top.env.apb_agent.monitor [apb monitor] write to analysis port
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 300700: uvm_test_top.env.apb_agent.monitor [apb monitor] write analysis port done!
+# @ 300800    : seq_w_ctrl
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 301100: uvm_test_top.env.apb_agent.monitor [apb monitor] write addr : 0000000c
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 301100: uvm_test_top.env.apb_agent.monitor [apb monitor] write data : 00000001
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 301100: uvm_test_top.env.apb_agent.monitor [apb monitor] write to analysis port
+# UVM_INFO ../libs/dti_apb_vip/master/dti_apb_master_monitor.sv(17) @ 301100: uvm_test_top.env.apb_agent.monitor [apb monitor] write analysis port done!
+# UVM_INFO ../libs/dti_uart_vip/receiver/dti_uart_rx_monitor.sv(17) @ 1291200: uvm_test_top.env.uart_rx.monitor [RX_MONITOR] Sampled data = 0xfb
+# Break key hit
+# Break at ../src/test_comp/apb_uart_top.sv line 73
+# Stopped at ../src/test_comp/apb_uart_top.sv line 73
+#  quit
+# Saving coverage database on exit...
+# End time: 15:01:56 on Jun 06,2025, Elapsed time: 0:01:32
+# Errors: 0, Warnings: 0

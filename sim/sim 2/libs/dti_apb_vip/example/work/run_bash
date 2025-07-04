@@ -1,0 +1,38 @@
+#!/bin/bash
+reset
+export MTI_HOME=/tools/mentor/questasim-2023.4
+export UVM_HOME=/new_data6/workspace/libs/uvm/uvm-1.1d
+
+ccflags_dyn="-fPIC"
+ldflags_dyn="-shared"
+if [ ! -f uvm_dpi.so ]; then
+  echo "c++ -Wno-deprecated ${ccflags_dyn} ${ldflags_dyn} -DQUESTA -I ${MTI_HOME}/include -o uvm_dpi.so ${UVM_HOME}/src/dpi/uvm_dpi.cc"
+  c++ -Wno-deprecated ${ccflags_dyn} ${ldflags_dyn} -DQUESTA -I ${MTI_HOME}/include -o uvm_dpi.so ${UVM_HOME}/src/dpi/uvm_dpi.cc
+fi
+
+# prepare for sim
+alias vlb='rm -rf work; vlib work; mkdir -p log ucdb'
+
+# compile both rtl and testbench source code
+alias vlg='clear; vlog -64 -f filelist.f +define+UVM_REPORT_DISABLE_FILE +incdir+${UVM_HOME}/src +cover=bcefs -nocoverfec -timescale 1ns/1ns -l ./log/vlog.log' 
+
+# compile rtl only
+alias vlgr='clear; vlog -f filelist_rtl.f +incdir+${UVM_HOME}/src +cover=bcefs -nocoverfec -l ./log/vlogr.log'
+
+# compile testbench only
+alias vlgt='clear; vlog -f filelist_tb.f +incdir+${UVM_HOME}/src -timescale 1ns/1ns -l ./log/vlogt.log'
+
+# run simulation
+alias vsm='vsim -c -64 work.tb_dti_apb_top -l log/vsm.log -no_autoacc -voptargs=+acc -wlf vsim.wlf -solvefaildebug -assertdebug +UVM_NO_RELNOTES -sva +UVM_VERBOSITY=UVM_MEDIUM -sv_lib uvm_dpi -do "add wave -r /tb_dti_apb_top/*; run -all; exit;"'
+
+# View wave
+alias viw='vsim -view vsim_mode0.wlf -do "radix -binary" -do wave.do &'
+
+# Export coverage
+alias vcv='vcover report -detail "ucdb/coverage.ucdb"'
+
+# View coverage in Questa
+alias vcvg='vsim -viewcov "ucdb/coverage.ucdb" &'
+
+# Export coverage in webview HTMl
+alias vcvh='vcover report -html "ucdb/coverage.ucdb"'

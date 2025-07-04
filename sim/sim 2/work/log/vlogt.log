@@ -1,0 +1,16 @@
+QuestaSim-64 vlog 2021.1 Compiler 2021.01 Jan 19 2021
+Start time: 15:00:06 on Jun 06,2025
+vlog -64 -f filelist_com.f -f filelist_vsim.f "+incdir+../libs/uvm-1.1d/src" -f filelist_tb.f -l ./log/vlogt.log 
+-- Skipping package dti_uart_regs_pkg
+-- Skipping package dti_uart_pkg
+-- Skipping package dti_apb_pkg
+-- Skipping package uart_seq_pkg
+-- Skipping package apb_seq_pkg
+-- Skipping package dti_sysclk_dynamo_pkg
+-- Skipping interface dti_sys_intf
+-- Skipping module apb_uart_top
+
+Top level modules:
+	apb_uart_top
+End time: 15:00:12 on Jun 06,2025, Elapsed time: 0:00:06
+Errors: 0, Warnings: 1

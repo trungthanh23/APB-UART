@@ -14,7 +14,6 @@ module uart_core (
     input                  tx_tick,
     output  logic          tx_done_o,
     output  logic          tx,
-    output  logic          tx_enable, 
     output  logic          tx_start_ack_o,
 
     // Register block - rx - peripheral
@@ -24,15 +23,13 @@ module uart_core (
     output  logic          rts_n,
     output  logic          rx_done_o, 
     output  logic          parity_error_o,
-    output  logic [31:0]   rx_data_o,
-    output  logic          rx_enable
+    output  logic [31:0]   rx_data_o
 );
 
     uart_tx uart_tx (
         .clk(clk),
         .reset_n(reset_n),
         .tx_tick(tx_tick),
-        .tx_enable(tx_enable),
         .tx_data_i(tx_data_i),
         .data_bit_num_i(data_bit_num_i),
         .start_tx_i(start_tx_i),
@@ -58,7 +55,6 @@ module uart_core (
         .parity_error_o(parity_error_o),
         .rx_data_o(rx_data_o),
         .rx(rx),
-        .rx_enable(rx_enable),
         .rts_n(rts_n)
     );
     

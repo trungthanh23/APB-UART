@@ -54,7 +54,6 @@ module apb_uart #(
     // Baudrate signals
     wire         tx_tick;
     wire         rx_tick;
-    wire         tx_enable; 
 
     apb_slave apb_slave (
         .clk(clk),
@@ -122,9 +121,7 @@ module apb_uart #(
         .tx_tick(tx_tick),
         .tx_done_o(tx_done_reg_uart),
         .tx(tx),
-        .tx_enable(tx_enable),
         .tx_start_ack_o(tx_start_ack_reg_uart), 
-        .rx_enable(rx_enable),
         .rx(rx),
         .rx_tick(rx_tick),
         .host_read_data_i(host_read_data_reg_uart),
@@ -140,8 +137,6 @@ module apb_uart #(
     ) baudrate_generator(
         .clk(clk),
         .reset_n(reset_n),
-        .tx_enable(tx_enable),
-        .rx_enable(rx_enable),
         .tx_tick(tx_tick),
         .rx_tick(rx_tick)
     );

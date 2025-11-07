@@ -3,9 +3,7 @@ module baudrate_generator #(
     parameter CFG_CLK_FREQ = 50000000 
 )(
     input clk,
-    input reset_n,
-    input tx_enable,  
-    input rx_enable, 
+    input reset_n, 
     output tx_tick,
     output rx_tick
 );
@@ -19,7 +17,7 @@ module baudrate_generator #(
     always_ff @(posedge clk or negedge reset_n) begin 
         if (~reset_n) begin
             tx_current_count <= 0;
-        end else if (tx_enable) begin 
+        end else begin 
             tx_current_count <= tx_next_count;
         end
     end
@@ -37,7 +35,7 @@ module baudrate_generator #(
     always_ff @(posedge clk or negedge reset_n) begin 
         if (~reset_n) begin
             rx_current_count <= 0;
-        end else if (rx_enable) begin 
+        end else begin 
             rx_current_count <= rx_next_count;
         end
     end
@@ -52,6 +50,7 @@ module baudrate_generator #(
     end
 
     // Tick generation for TX and RX
-    assign tx_tick = tx_enable && (tx_current_count == COUNT_TO); 
-    assign rx_tick = rx_enable && (rx_current_count == COUNT_TO); 
+    assign tx_tick = (tx_current_count == COUNT_TO); 
+    assign rx_tick = (rx_current_count == COUNT_TO); 
+
 endmodule

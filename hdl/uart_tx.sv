@@ -5,7 +5,6 @@ module uart_tx (
 
     // Baudrate generator signals
     input           tx_tick,
-    output logic    tx_enable,
 
     // Register block signals
     input   [31:0]  tx_data_i,
@@ -113,13 +112,6 @@ module uart_tx (
         end else begin
             tx_start_ack_o <= 0; 
         end
-    end
-
-    always_comb begin
-        case (current_state)
-            TX_IDLE: tx_enable = 0;
-            default: tx_enable = 1; 
-        endcase
     end
 
     // Output tx_done_o
@@ -239,4 +231,5 @@ module uart_tx (
             default: num_stop_bit_tx = 1;
         endcase
     end
+
 endmodule

@@ -11,8 +11,7 @@ module uart_rx (
     output logic           parity_error_o,
     output logic [31:0]    rx_data_o,
     input                  rx,
-    output logic           rts_n,
-    output logic           rx_enable
+    output logic           rts_n
 );
 
     enum logic [2:0] {
@@ -122,15 +121,7 @@ module uart_rx (
             endcase
         end
     end
-
-    // Enable rx_tick
-    always_comb begin
-        case (current_state)
-            RX_IDLE: rx_enable = 0;
-            default: rx_enable = 1; 
-        endcase
-    end
-
+    
     // Config rx_done_o and rts_n
     always_ff @(posedge clk, negedge reset_n) begin
         if (~reset_n) begin

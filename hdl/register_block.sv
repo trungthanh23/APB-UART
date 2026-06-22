@@ -161,7 +161,7 @@ always_ff @(posedge clk, negedge reset_n) begin
     if (!reset_n) begin
         prdata_o <= 32'b0;
     end else begin
-        if (~(pwrite_i) && rx_done_i) begin
+        if (read_en) begin
             case (paddr_i)
                 ADDR_TX_DATA_REG: begin
                     prdata_o <= tx_data_reg;
@@ -182,8 +182,6 @@ always_ff @(posedge clk, negedge reset_n) begin
                     prdata_o <= 32'b0;
                 end
             endcase 
-        end else begin
-            prdata_o = prdata_o;
         end
     end
 end

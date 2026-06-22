@@ -31,6 +31,19 @@ module uart_rx (
     logic       parity_received;
     logic       parity_cal_reg;
 
+    logic rx_sync_reg0;
+    logic rx_sync;
+
+    always_ff @(posedge clk or negedge reset_n) begin
+        if (~reset_n) begin
+            rx_sync_reg0 <= 1'b1;
+            rx_sync      <= 1'b1;
+        end else begin
+            rx_sync_reg0 <= rx;
+            rx_sync      <= rx_sync_reg0;
+        end
+    end
+
     // Current state
     always_ff @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
@@ -44,11 +57,11 @@ module uart_rx (
     always_comb begin
         case (current_state)
             RX_IDLE: begin
-                if (~rx && !rx_done_o) next_state = RX_START;
+                if (~rx_sync && !rx_done_o) next_state = RX_START;
                 else next_state = RX_IDLE;
             end
             RX_START: begin
-                if (count == 4'd15 && ~rx) next_state = RX_DATA;
+                if (count == 4'd15 && ~rx_sync) next_state = RX_DATA;
                 else if (count == 4'd15) next_state = RX_IDLE;
                 else next_state = RX_START;
             end
@@ -91,7 +104,7 @@ module uart_rx (
                             count <= 0;
                         end else if (count == 4'd7) begin
                             count <= count + 1;
-                            data_reg[data_rx_count] <= rx;
+                            data_reg[data_rx_count] <= rx_sync;
                             data_rx_count <= data_rx_count + 1;
                             stop_rx_count <= 0;
                         end else count <= count + 1;
@@ -106,7 +119,7 @@ module uart_rx (
                             count <= 0;
                         end else if (count == 4'd7) begin
                             count <= count + 1;
-                            stop_reg[stop_rx_count] <= rx;
+                            stop_reg[stop_rx_count] <= rx_sync;
                             stop_rx_count <= stop_rx_count + 1;
                             data_rx_count <= 0;
                         end else count <= count + 1;
@@ -158,14 +171,14 @@ module uart_rx (
             parity_cal_reg <= 0;
         end else if ((data_rx_count == num_data_bit_rx) && (count == 4'd15) && parity_en_i) begin
             case ({parity_type_i, data_bit_num_i})
-                3'b000: parity_cal_reg <= ~(^data_reg[4:0]);
-                3'b001: parity_cal_reg <= ~(^data_reg[5:0]);
-                3'b010: parity_cal_reg <= ~(^data_reg[6:0]);
-                3'b011: parity_cal_reg <= ~(^data_reg[7:0]);
-                3'b100: parity_cal_reg <= ^data_reg[4:0];
-                3'b101: parity_cal_reg <= ^data_reg[5:0];
-                3'b110: parity_cal_reg <= ^data_reg[6:0];
-                3'b111: parity_cal_reg <= ^data_reg[7:0];
+                3'b000: parity_cal_reg <= ^data_reg[4:0];
+                3'b001: parity_cal_reg <= ^data_reg[5:0];
+                3'b010: parity_cal_reg <= ^data_reg[6:0];
+                3'b011: parity_cal_reg <= ^data_reg[7:0];
+                3'b100: parity_cal_reg <= ~(^data_reg[4:0]);
+                3'b101: parity_cal_reg <= ~(^data_reg[5:0]);
+                3'b110: parity_cal_reg <= ~(^data_reg[6:0]);
+                3'b111: parity_cal_reg <= ~(^data_reg[7:0]);
                 default: parity_cal_reg <= 0;
             endcase
         end else if (current_state == RX_IDLE) begin

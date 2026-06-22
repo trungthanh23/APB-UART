@@ -32,7 +32,7 @@ module apb_slave # (
     output logic [31:0] pwdata_o,
     output logic [11:0] paddr_o
 );
-enum logic [2:0] {
+enum logic [1:0] {
     APB_IDLE  = 2'b00,
     APB_SETUP = 2'b01
 } current_state, next_state;
@@ -130,19 +130,19 @@ always_comb begin
             if (psel && penable && pready) begin
                 case (paddr)
                     ADDR_TX_DATA_REG: begin
-                        pslverr = pwrite && ~(|(pwdata[31:8])) ? 0 : 1;
+                        pslverr = 0;
                     end
                     ADDR_RX_DATA_REG: begin
                         pslverr = pwrite;
                     end
                     ADDR_CFG_REG: begin
-                        pslverr = pwrite && ~(|(pwdata[31:5])) ? 0 : 1;
+                        pslverr = 0;
                     end
                     ADDR_CTRL_REG: begin
-                        pslverr = pwrite && ~(|(pwdata[31:1])) ? 0 : 1;
+                        pslverr = 0;
                     end
                     ADDR_STT_REG: begin
-                        pslverr = pwrite ? 1 : parity_error_i;
+                        pslverr = pwrite;
                     end
                     default: begin
                         pslverr = 1;

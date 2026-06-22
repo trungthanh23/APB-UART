@@ -34,11 +34,24 @@ module uart_tx (
     logic [3:0] num_data_bit_tx;    
     logic [1:0] num_stop_bit_tx;
 
+    logic cts_n_sync_reg0;
+    logic cts_n_sync;
+
+    always_ff @(posedge clk or negedge reset_n) begin
+        if (!reset_n) begin
+            cts_n_sync_reg0 <= 1'b1;
+            cts_n_sync      <= 1'b1;
+        end else begin
+            cts_n_sync_reg0 <= cts_n;
+            cts_n_sync      <= cts_n_sync_reg0;
+        end
+    end
+
     // Tick counter block
     always_ff @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
             tick_current_count <= 0;
-        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n_sync) begin
             tick_current_count <= 0;
         end else if (tx_tick) begin
             tick_current_count <= tick_next_count;
@@ -59,7 +72,7 @@ module uart_tx (
             current_state <= TX_IDLE;
         end else if (tx_tick && tick_current_count == 4'd15) begin
             current_state <= next_state;
-        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n_sync) begin
             current_state <= TX_START;
         end
     end
@@ -68,7 +81,7 @@ module uart_tx (
     always_comb begin
         case (current_state)
             TX_IDLE: begin
-                if (start_tx_i && !cts_n) begin
+                if (start_tx_i && !cts_n_sync) begin
                     next_state = TX_START;
                 end else begin
                     next_state = TX_IDLE;
@@ -90,7 +103,7 @@ module uart_tx (
             end
             TX_STOP: begin
                 if (tick_current_count == 4'd15 && stop_current_count == num_stop_bit_tx - 1) begin
-                    if (start_tx_i && !cts_n) begin
+                    if (start_tx_i && !cts_n_sync) begin
                         next_state = TX_START;
                     end else begin
                         next_state = TX_IDLE;
@@ -107,7 +120,7 @@ module uart_tx (
     always_ff @(posedge clk, negedge reset_n) begin
         if (!reset_n) begin
             tx_start_ack_o <= 0;
-        end else if (current_state == TX_IDLE && start_tx_i && !cts_n) begin
+        end else if (current_state == TX_IDLE && start_tx_i && !cts_n_sync) begin
             tx_start_ack_o <= 1; 
         end else begin
             tx_start_ack_o <= 0; 
@@ -140,15 +153,15 @@ module uart_tx (
             TX_STOP: begin
                 if (parity_en_i && stop_current_count == 0) begin
                     case ({parity_type_i, data_bit_num_i})
-                        3'b000: tx = ~(^tx_data_i[4:0]);
-                        3'b001: tx = ~(^tx_data_i[5:0]);
-                        3'b010: tx = ~(^tx_data_i[6:0]);
-                        3'b011: tx = ~(^tx_data_i[7:0]);
-                        3'b100: tx = (^tx_data_i[4:0]);
+                        3'b000: tx = (^tx_data_i[4:0]);
+                        3'b001: tx = (^tx_data_i[5:0]);
+                        3'b010: tx = (^tx_data_i[6:0]);
+                        3'b011: tx = (^tx_data_i[7:0]);
+                        3'b100: tx = ~(^tx_data_i[4:0]);
                         
-                        3'b101: tx = (^tx_data_i[5:0]);
-                        3'b110: tx = (^tx_data_i[6:0]);
-                        3'b111: tx = (^tx_data_i[7:0]);
+                        3'b101: tx = ~(^tx_data_i[5:0]);
+                        3'b110: tx = ~(^tx_data_i[6:0]);
+                        3'b111: tx = ~(^tx_data_i[7:0]);
                         default: tx = 1;
                     endcase
                 end else begin
